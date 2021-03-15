@@ -1,5 +1,10 @@
-
-// Tasmota: object.prefix.channel = { state: value; state: value }
+/*
+ * VirtualDevice.Tasmota
+ * author: Olaf Sonderegger (github.com/0x01af)
+ *
+ * Notes:
+ * - Tasmota object representation at MQTT adapter: object.prefix.channel = { state: value; state: value }
+ */
 
 // VirtualDeviceTasmota:Constructor
 function VirtualDeviceTasmota (object) {
