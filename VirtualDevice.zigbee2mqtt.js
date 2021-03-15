@@ -1,5 +1,11 @@
-
-// Zigbee2mqtt: object = { state: value; state: value }
+/*
+ * VirtualDevice.zigbee2mqtt
+ * author: Olaf Sonderegger (github.com/0x01af)
+ *
+ * Notes:
+ * - Zigbee2mqtt object representation within iobroker: object = { state: value; state: value }
+ * - Discussion about function Constructor vs variable Constructor AND prototype vs function-in-function: https://stackoverflow.com/questions/4508313/advantages-of-using-prototype-vs-defining-methods-straight-in-the-constructor
+ */
 
 // VirtualDeviceZigbee2mqtt:Constructor
 function VirtualDeviceZigbee2mqtt (object) {
@@ -11,10 +17,6 @@ function VirtualDeviceZigbee2mqtt (object) {
  this.original = object;
  
 };
-
-/*
-https://stackoverflow.com/questions/4508313/advantages-of-using-prototype-vs-defining-methods-straight-in-the-constructor
-*/
 
 // read from device (translate MQTT to VirtualDevice)
 VirtualDeviceZigbee2mqtt.prototype.read = function (property) {
