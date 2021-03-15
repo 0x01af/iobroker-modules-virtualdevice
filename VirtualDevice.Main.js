@@ -1,5 +1,5 @@
 /*
- * ioBroker JavaScript MQTT_Clients_Handler
+ * ioBroker JavaScript VirtualDevice.Main
  * written by: Olaf Sonderegger (github.com/0x01af)
  * 
  * Description:
@@ -12,7 +12,8 @@
  * - ZigBee2MQTT
  * - Tasmota
  * 
- * License:
+ * TODOS:
+ * - re-factoring script with usage of VirtualDevice Factory and Classes
  */
 /*
  * Script-Basiskonfiguration:
