@@ -15,6 +15,7 @@
  * TODOS:
  * - re-factoring script with usage of VirtualDevice Factory and Classes
  */
+const VirtualDeviceFactory = require('../../../iobroker-data/modules_virtualdevice/VirtualDevice.Factory')
 /*
  * Script-Basiskonfiguration:
  */
