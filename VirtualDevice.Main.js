@@ -54,8 +54,8 @@ const namespaceJS = ""
  */ 
 let deviceConfigs = {
     'test_sonoff_snzb-02': {
-        namespace: 'sensor', // Ziel-Ordner der Objekt-Kopie (Root-Ordner ist ioAdapterJS + namespaceJS)
-        common: { role: 'sensor', },
+        namespace: 'zigbee2mqtt', // VirtualDevice.Factory->Namespace
+        common: { role: 'sensor', }, // Ziel-Ordner der Objekt-Kopie (Root-Ordner ist ioAdapterJS + namespaceJS)
         native: { type: 'weather sensor', },
         states: {
             'temperature': {
@@ -86,7 +86,7 @@ let deviceConfigs = {
         },
     },
     'test_sonoff_snzb-01': {
-        namespace: 'button',
+        namespace: 'zigbee2mqtt', // VirtualDevice.Factory->Namespace
         common: { role: 'button', },
         native: { type: 'button', },
         states: {
@@ -108,7 +108,7 @@ let deviceConfigs = {
         },
     },
     'test_sonoff_basiczbr3': {
-        namespace: 'switch',
+        namespace: 'zigbee2mqtt', // VirtualDevice.Factory->Namespace
         common: { role: 'switch', },
         native: { type: 'switch', },
         states: {
@@ -126,7 +126,7 @@ let deviceConfigs = {
         },
     },
     'test_gledopto_gl-c-006': {
-        namespace: 'switch',
+        namespace: 'zigbee2mqtt', // VirtualDevice.Factory->Namespace
         common: { role: 'switch.light', },
         native: { type: 'LED controller', },
         states: {
