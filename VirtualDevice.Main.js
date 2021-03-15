@@ -24,14 +24,14 @@ const ioAdapterJS = 'javascript.0'
 const ioAdapterMQTT = 'mqtt.0'
 const ioAdapterHistory = 'history.0'
 const ioAdapterLovelace = 'lovelace.0'
-// ioBroker MQTT Adapter: Namespace der ZigBee2MQTT Objekte
-const namespaceMQTT = 'zigbee2mqtt'
-// const baseTopicZ2M = 'zigbee2mqtt'
-// const baseTopicTSMT = 'tasmota'
+
+// Configure, which Namespaces should be handled.
+const namespaces = [ 'zigbee2mqtt', 'tasmota' ]
+
 // ZigBee Base Topic (by default "zigbee2mqtt")
 const zigbeeBaseTopic = 'zigbee2mqtt'
 // ioBroker JavaScript Adapter: Namespace der Virtuellen Geräte Objekte
-const namespaceJS = ""
+const namespaceVirtualDevices = ''
 
 
 /*
@@ -180,10 +180,11 @@ let deviceConfigs = {
 let objIDs = [];
 let objWriteIDs = []; // TODO
 
-var pathSrc = ioAdapterMQTT + (namespaceMQTT.valueOf() !== '' ? '.' + namespaceMQTT : '');
-var pathDst = ioAdapterJS + (namespaceJS.valueOf() !== '' ? '.' + namespaceJS : '');
+var pathVirtualDevices = ioAdapterJS + (namespaceVirtualDevices.valueOf() !== '' ? '.' + namespaceVirtualDevices : '');
 
 /*
+ * Concept: Virtual Device structure at ioBroker
+ *
  * # Aktueller Strukturbaum:
  * adapter.adapterInstance.deviceType.device.state
  * 
@@ -208,19 +209,48 @@ var pathDst = ioAdapterJS + (namespaceJS.valueOf() !== '' ? '.' + namespaceJS : 
  * - Objekte / Datenpunkte detektieren - https://github.com/ioBroker/ioBroker.sonoff/blob/80e551bff5d6eebafd21ffbe3d60ff616c8c6e8d/lib/server.js#L1204
 */
 
+/* Re-factoring part 1 - the virtual device factoring:
+ * - old: get all ioBroker objects and find corresponding DeviceConfig
+ * + new: get all DeviceConfig within current Namespace and find corresponding ioBroker objects
+ * 
+ * Discussion:
+ * + Performance: selecting only ioBroker objects, which needs to be selected
+ * + Performance: iterating once through DeviceConfig array instead number of ioBroker objects times
+*/
 
-$("[id=" + pathSrc + ".*]").each(function (objID) {
+/*
+ * Part 1: The virtual device factoring
+ */
+// ====== Step 1: Iterate through MQTT namespaces
+namespaces.forEach(function(_namespace) {
+
+// ====== Step 2: select all well-known device-configs within MQTT namespace
+
+
+
+
+// ====== Step 3: get all ioBroker objects within MQTT namespace based on well-known device-configs
+
+  // https://github.com/ioBroker/ioBroker.javascript/blob/master/docs/en/javascript.md#---selector
+  $("[id=" + ioAdapterMQTT + '.' + _namespace + ".*]").each(function (objID) {
     // eg. objID: mqtt.0.zigbee2mqtt.sonoff_snzb-02_s001
     // objDeviceType: everythin between the last dot and the last underscore
     // https://stackoverflow.com/questions/31262539/how-can-i-extract-text-from-the-middle-of-a-string-with-javascript
     var objDeviceType = objID.match(/([a-z0-9-_]+)_[a-z0-9]{4,7}$/i);
         
-    if(objDeviceType && Object.keys(deviceConfigs).indexOf(objDeviceType[1] ) >= 0){
-        /*
-         * Create new virtual device and its states
-        */
+    if(objDeviceType && Object.keys(deviceConfigs).indexOf(objDeviceType[1]) >= 0){
+
+		
+// ====== Step 4: create/update the structure of corresponding Virtual Devices
+
         // Make a copy of device template
         let deviceCfg = deviceConfigs[objDeviceType[1]];
+
+        if(deviceCfg.namespace !== _namespace) {
+            log('Namespace of object do not match for device type: ' + objID, 'info');
+            return;
+        }
+
         if(!deviceCfg.hasOwnProperty('common')) deviceCfg.common = {};
         if(!deviceCfg.hasOwnProperty('native')) deviceCfg.native = {};
 
@@ -228,8 +258,7 @@ $("[id=" + pathSrc + ".*]").each(function (objID) {
         deviceCfg.common.name = getObject(objID).common.name.replace(zigbeeBaseTopic + '/', '');
 
         // Create new virtual device (folder)
-        
-        var deviceID = pathDst +
+        var deviceID = pathVirtualDevices +
             (deviceCfg.namespace && deviceCfg.namespace !== '' ? '.' + deviceCfg.namespace : '') +
             '.' + deviceCfg.common.name;
         
@@ -333,13 +362,12 @@ $("[id=" + pathSrc + ".*]").each(function (objID) {
     } else {
         log('Undefined device type found for object: ' + objID, 'info');
     }
-})
+  })
+});
 
 
 /*
- * Subscribe to MQTT messages for updating read states of the virtual devices (MQTT -> JavaScript)
- * written by: Olaf Sonderegger (github.com/0x01af)
- * 
+ * Part 2: Subscribe to MQTT messages for updating read states of the virtual devices (MQTT -> JavaScript)
  */
 on({id: objIDs, change: "any"}, function (obj) {
     /*
@@ -354,7 +382,7 @@ on({id: objIDs, change: "any"}, function (obj) {
         // Make a copy of device template
         deviceCfg = deviceConfigs[objDeviceType[1]];
         
-        deviceID = pathDst +
+        deviceID = pathVirtualDevices +
             (deviceCfg.namespace && deviceCfg.namespace !== '' ? '.' + deviceCfg.namespace : '') +
             '.' + obj.common.name.replace(zigbeeBaseTopic + '/', '');
     } else {
@@ -383,9 +411,8 @@ on({id: objIDs, change: "any"}, function (obj) {
 })
 
 /*
- * Subscribe to write states of the virtual devices for sending MQTT messages (JavaScript -> MQTT)
- * written by: Olaf Sonderegger (github.com/0x01af)
- * 
+ * Part 3: Subscribe to write states of the virtual devices for sending MQTT messages (JavaScript -> MQTT)
+ *
  * inspired by:
  * - https://forum.iobroker.net/topic/28951/mqtt-publish-mit-js-an-mqtt-mosquitto-broker/2 
  * - https://forum.iobroker.net/topic/12829/vorlage-wechselseitige-aktualisierung-und-bedienung-von-datenpunkten (!!!)
